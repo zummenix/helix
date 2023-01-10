@@ -910,7 +910,7 @@ Languages</a> guide for more language configuration information.</p>
 <tr><td>common-lisp</td><td>✓</td><td></td><td></td><td><code>cl-lsp</code></td></tr>
 <tr><td>cpon</td><td>✓</td><td></td><td>✓</td><td></td></tr>
 <tr><td>cpp</td><td>✓</td><td>✓</td><td>✓</td><td><code>clangd</code></td></tr>
-<tr><td>crystal</td><td>✓</td><td></td><td></td><td></td></tr>
+<tr><td>crystal</td><td>✓</td><td>✓</td><td></td><td></td></tr>
 <tr><td>css</td><td>✓</td><td></td><td></td><td><code>vscode-css-language-server</code></td></tr>
 <tr><td>cue</td><td>✓</td><td></td><td></td><td><code>cuelsp</code></td></tr>
 <tr><td>d</td><td>✓</td><td>✓</td><td>✓</td><td><code>serve-d</code></td></tr>
@@ -1365,6 +1365,11 @@ berry = &quot;#2A2A4D&quot;
 <p><code>type</code> - Types</p>
 <ul>
 <li><code>builtin</code> - Primitive types provided by the language (<code>int</code>, <code>usize</code>)</li>
+<li><code>enum</code>
+<ul>
+<li><code>variant</code></li>
+</ul>
+</li>
 </ul>
 </li>
 <li>
@@ -1478,6 +1483,9 @@ berry = &quot;#2A2A4D&quot;
 </li>
 <li>
 <p><code>namespace</code></p>
+</li>
+<li>
+<p><code>special</code></p>
 </li>
 <li>
 <p><code>markup</code></p>
