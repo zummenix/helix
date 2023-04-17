@@ -2134,40 +2134,27 @@ fn search_impl(
         )),
     };
 
-    // A regex::Match returns byte-positions in the str. In the case where we
-    // do a reverse search and wraparound to the end, we don't need to search
-    // the text before the current cursor position for matches, but by slicing
-    // it out, we need to add it back to the position of the selection.
-    let doc = doc!(editor).text().slice(..);
+    let matches = regex.find_iter(text.regex_input()).collect::<Vec<_>>();
 
-    // use find_at to find the next match after the cursor, loop around the end
-    // Careful, `Regex` uses `bytes` as offsets, not character indices!
-    let mut mat = match direction {
-        Direction::Forward => regex.find(doc.regex_input_at_bytes(start..)),
-        Direction::Backward => regex.find_iter(doc.regex_input_at_bytes(..start)).last(),
+    let mut i_mat = match direction {
+        Direction::Forward => matches
+            .iter()
+            .enumerate()
+            .find(|&pair| pair.1.start() >= start),
+        Direction::Backward => matches
+            .iter()
+            .enumerate()
+            .rfind(|&pair| pair.1.end() <= start),
     };
 
-    if mat.is_none() {
-        if wrap_around {
-            mat = match direction {
-                Direction::Forward => regex.find(doc.regex_input()),
-                Direction::Backward => regex.find_iter(doc.regex_input_at_bytes(start..)).last(),
-            };
-        }
-        if show_warnings {
-            if wrap_around && mat.is_some() {
-                editor.set_status("Wrapped around document");
-            } else {
-                editor.set_error("No more matches");
-            }
+    if i_mat.is_none() && wrap_around && !matches.is_empty() {
+        match direction {
+            Direction::Forward => i_mat = Some((0, matches.first().unwrap())),
+            Direction::Backward => i_mat = Some((matches.len() - 1, matches.last().unwrap())),
         }
     }
 
-    let (view, doc) = current!(editor);
-    let text = doc.text().slice(..);
-    let selection = doc.selection(view.id);
-
-    if let Some(mat) = mat {
+    if let Some((i, mat)) = i_mat {
         let start = text.byte_to_char(mat.start());
         let end = text.byte_to_char(mat.end());
 
@@ -2187,7 +2174,15 @@ fn search_impl(
 
         doc.set_selection(view.id, selection);
         view.ensure_cursor_in_view_center(doc, scrolloff);
-    };
+
+        if show_warnings {
+            editor.set_status(format!("Match {} of {}", i + 1, matches.len()));
+        }
+    } else {
+        if show_warnings {
+            editor.set_error("No more matches");
+        }
+    }
 }
 
 fn search_completions(cx: &mut Context, reg: Option<char>) -> Vec<String> {
